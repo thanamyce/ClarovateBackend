@@ -17,7 +17,7 @@ export type UserDocument = User & Document;
 })
 export class User {
    
-  @Prop()
+  @Prop({unique: true, required: true})
   _id: string;
   
   @Prop({ required: true, unique: true, index: true })

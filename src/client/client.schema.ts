@@ -16,7 +16,7 @@ class AlternateContact {
 @Schema({ timestamps: true })
 export class Client extends Document {
 
-  @Prop()
+  @Prop({required: true, unique: true})
   declare _id: string; // Custom clientId as primary key
 
   @Prop()
@@ -31,7 +31,7 @@ export class Client extends Document {
   @Prop()
   clientContactNo: string;
 
-  @Prop()
+  @Prop({required: true, unique: true})
   clientMail: string;
 
   @Prop()
