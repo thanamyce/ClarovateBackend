@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>You’re Invited!</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet" />
+    <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+        background: #f9f9f9;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 40px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        text-align: center;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      p {
+        color: #666;
+        line-height: 1.6;
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 30px;
+        padding: 12px 30px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background: #007bff;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background 0.3s;
+      }
+      .btn:hover {
+        background: #0056b3;
+      }
+      .footer {
+        margin-top: 40px;
+        font-size: 12px;
+        color: #999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hi,</h1>
+      <p>{{email}}</p>
+      <p>You’ve been invited to join Clarovate as role {{role}}.</p>
+      <p>Please click the button below to accept your invitation and set up your account:</p>
+      <a href="{{inviteLink}}" class="btn">Accept Invitation</a>
+      <p class="footer">This link will expire in 24 hours.</p>
+    </div>
+  </body>
+</html>
