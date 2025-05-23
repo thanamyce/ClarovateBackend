@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 // For user registration
@@ -53,6 +53,12 @@ export class LoginDto {
   @IsNotEmpty()
   @MinLength(6)
   readonly password: string;
+}
+
+export class StatusUpdateDto{
+  @ApiProperty({ example: 'true' })
+  @IsBoolean()
+  readonly status: boolean;
 }
 
 // For invitation redemption

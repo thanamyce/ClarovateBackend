@@ -13,7 +13,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto, RedeemDto } from './user.dto';
+import { CreateUserDto, RedeemDto, StatusUpdateDto } from './user.dto';
 import { UpdateUserDto, LoginDto } from './user.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ReqUser } from 'src/util/decorates';
@@ -130,7 +130,18 @@ export class UserController {
     return ResponseHelper.success(users, 'Users fetched successfully', HttpStatus.OK);
   }
 
-  
+  @UseGuards(AuthAdmin)
+  @Put('user/updatestatus/:id')
+  @ApiOperation({ summary: 'Update user status (admin only)' })
+  @ApiResponse({ status: 200, description: 'status successfully updated' })
+  @ApiBearerAuth()
+  async updateStatus(@Body() body:StatusUpdateDto,@Param('id') id:string){
+    return this.userService.changeActiveStatus(body.status,id);
+
+  }
+
+
+
   @Get('roles')
   @ApiOperation({ summary: 'Get Roles' })
   @ApiResponse({ status: 200, description: 'Roles fetched' })

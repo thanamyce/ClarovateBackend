@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   InternalServerErrorException,
+  HttpStatus,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -15,6 +16,7 @@ import { Invitation, InvitationDocument } from 'src/invitation/invitation.schema
 import { AuthService } from 'src/auth/auth.service';
 import { retry } from 'rxjs';
 import { CounterSchema } from './counter.schema';
+import { ResponseHelper } from 'src/util/response';
 
 @Injectable()
 export class UserService {
@@ -165,6 +167,26 @@ export class UserService {
     const users = await this.userModel.find({});
     return users.length > 0 ? users : [];
   }
+
+async changeActiveStatus(status:boolean,id: string){
+
+    try {
+      const user = await this.userModel.findById({id});
+      if(!user){
+        return ResponseHelper.success(null,"User not found",HttpStatus.NOT_FOUND)
+      }else{
+        const updatedUser = await this.userModel.findByIdAndUpdate({id},{
+          $set:{isActive:status},
+        })
+        if(updatedUser){
+          return ResponseHelper.success(updatedUser,"User successfully updated",HttpStatus.OK)
+        }
+      }
+    } catch (error) {
+      return ResponseHelper.error(error,"Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  
+}
 
   async invitaionRedeem(user: RedeemDto) {
     const invitation = await this.InvitationModel.findOne({ token: user.token });

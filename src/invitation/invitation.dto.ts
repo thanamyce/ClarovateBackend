@@ -12,3 +12,10 @@ export class InvitationDto {
   @IsNotEmpty()
   role: string;
 }
+
+export class ReInvitationDto {
+  @ApiProperty({ example: 'user@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}

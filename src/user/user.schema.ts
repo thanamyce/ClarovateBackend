@@ -41,7 +41,8 @@ export class User {
   @Prop({ default: null, index: true })  // ✅ Add refresh token field
   refreshToken?: string; // Store hashed refresh token
 
-  
+  @Prop({type: Boolean, default: true})
+  isActive: boolean;
 
   @Prop()
   createdBy: string;
