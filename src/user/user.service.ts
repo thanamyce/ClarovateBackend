@@ -58,6 +58,7 @@ export class UserService {
       'email',
       'password',
       'role',
+      'isActive'
     ]);
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -177,6 +178,8 @@ async changeActiveStatus(status:boolean,id: string){
       }else{
         const updatedUser = await this.userModel.findByIdAndUpdate({id},{
           $set:{isActive:status},
+        },{
+          new: true
         })
         if(updatedUser){
           return ResponseHelper.success(updatedUser,"User successfully updated",HttpStatus.OK)

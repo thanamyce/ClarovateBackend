@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Req,
@@ -20,7 +21,7 @@ import { ReqUser } from 'src/util/decorates';
 import { AuthService } from 'src/auth/auth.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './user.schema';
-import { Model } from 'mongoose';
+import { get, Model } from 'mongoose';
 import { AuthAdmin } from 'src/auth/auth.admin';
 import { ResponseHelper } from 'src/util/response';
 
@@ -131,7 +132,7 @@ export class UserController {
   }
 
   @UseGuards(AuthAdmin)
-  @Put('user/updatestatus/:id')
+  @Patch('user/updatestatus/:id')
   @ApiOperation({ summary: 'Update user status (admin only)' })
   @ApiResponse({ status: 200, description: 'status successfully updated' })
   @ApiBearerAuth()

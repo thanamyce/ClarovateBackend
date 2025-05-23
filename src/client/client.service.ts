@@ -42,9 +42,9 @@ export class ClientService {
   // Update client by ID
   async update(clientId: string, updateClientDto: UpdateClientDto): Promise<Client> {
     // Ensure updatedBy is included in the update
-    const updatedClient = await this.clientModel.findByIdAndUpdate(
-      clientId,
-      updateClientDto,
+    const updatedClient = await this.clientModel.findOneAndUpdate(
+      {_id:clientId},
+      {$set: updateClientDto},
       { new: true }
     );
     if (!updatedClient) throw new NotFoundException('Client not found');

@@ -36,7 +36,7 @@ export class InvitationService {
 
       const token = uuidv4();
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 1);
+      expiresAt.setDate(expiresAt.getDate() + 2);
 
       const newInvitation = new this.InvitationModel({
         email,
@@ -53,6 +53,7 @@ export class InvitationService {
       await this.mailService.sendInvitationEmail({ email, role, inviteLink });
 
       return {
+        success: true,
         message: 'Invitation sent successfully',
       };
     } catch (error) {
@@ -65,61 +66,100 @@ export class InvitationService {
   }
 
   async reSendInvitation(email: string, createdBy: string) {
-    try {
-      const existingUser = await this.UserModel.findOne({ email });
-      if (existingUser) {
-        throw new ConflictException('User already exists');
-      }
+  try {
+    const existingUser = await this.UserModel.findOne({ email });
+    if (existingUser) {
+      throw new ConflictException('User already exists');
+    }
 
-      const existingInvitation:any = await this.InvitationModel.findOne({ email });
-      const now = new Date();
+    const existingInvitation = await this.InvitationModel.findOne({ email });
 
-      if (existingInvitation && now < existingInvitation.expiresAt) {
-        throw new ConflictException('Invitation already sent and is still pending');
-      }
+    const now = new Date();
 
-      const token = uuidv4();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 1);
+    // If invitation exists and hasn't expired, block resending
+    if (existingInvitation && existingInvitation.expiresAt > now) {
+      throw new ConflictException('An active invitation already exists.');
+    }
 
-      const newInvitation = new this.InvitationModel({
-        email,
-        role: existingInvitation.role,
-        token,
-        status: 'PENDING',
-        expiresAt,
-        createdBy,
-      });
-
-      await newInvitation.save();
-
-      const inviteLink = `http://portal.clarovate.io/invitation/accept/${token}`;
-      await this.mailService.sendInvitationEmail({ email, role:existingInvitation.role, inviteLink });
-
+    // If no invitation exists at all, return a meaningful response
+    if (!existingInvitation) {
       return {
-        message: 'Invitation resent successfully',
+        success: false,
+        message: 'No previous invitation found to resend.',
       };
-    } catch (error) {
-      if (error instanceof ConflictException || error instanceof BadRequestException) {
-        throw error;
-      }
-      console.error('Resend Invitation Error:', error);
-      throw new InternalServerErrorException('Failed to resend invitation');
     }
-  }
 
-  async getInvitation(){
-    try {
-      const invitations = await this.InvitationModel.find();
-      if(invitations.length===0){
-        return ResponseHelper.success(invitations,"No Invitations",HttpStatus.NOT_FOUND);
-      }else{
-        return ResponseHelper.success(invitations,"Invitations successfully fetched",HttpStatus.OK)
-      }
-    } catch (error) {
-      console.log(error)
+    const token = uuidv4();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 1);
+
+    // Update invitation
+    const updatedInvitation = await this.InvitationModel.findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          token,
+          status: 'PENDING',
+          expiresAt,
+          // optionally keep the original createdBy
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedInvitation) {
+      return {
+        success: false,
+        message: 'Failed to update invitation.',
+      };
     }
+
+    const inviteLink = `http://portal.clarovate.io/invitation/accept/${token}`;
+    await this.mailService.sendInvitationEmail({
+      email,
+      role: existingInvitation.role,
+      inviteLink,
+    });
+
+    return {
+      success: true,
+      message: 'Invitation resent successfully',
+    };
+  } catch (error) {
+    if (error instanceof ConflictException || error instanceof BadRequestException) {
+      throw error;
+    }
+    console.error('Resend Invitation Error:', error);
+    throw new InternalServerErrorException('Failed to resend invitation');
   }
+}
+
+
+async getInvitation() {
+  try {
+    const now = new Date();
+
+    // Update invitations that should be expired but still marked as PENDING
+    await this.InvitationModel.updateMany(
+      { status: 'PENDING', expiresAt: { $lt: now } },
+      { status: 'EXPIRED' }
+    );
+
+    // Fetch updated invitations
+    const invitations = await this.InvitationModel.find();
+
+    if (invitations.length === 0) {
+      return ResponseHelper.success(invitations, "No Invitations", HttpStatus.NOT_FOUND);
+    } else {
+      return ResponseHelper.success(invitations, "Invitations successfully fetched", HttpStatus.OK);
+    }
+  } catch (error) {
+    console.log(error);
+    // Consider returning an error response here
+    return ResponseHelper.error(error,"Failed to fetch invitations", HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
 
   async deleteInvitation(email: string) {
   try {

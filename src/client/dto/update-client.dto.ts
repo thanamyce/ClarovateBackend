@@ -36,7 +36,7 @@ export class UpdateClientDto {
   @ApiProperty({ 
     example: '64a1a12bc32e4a3e8c0550b3', 
     description: 'ID of the user who updated this client',
-    required: true
+    required: false
   })
-  updatedBy: string;
+  updatedBy?: string;
 } 
