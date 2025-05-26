@@ -14,10 +14,10 @@ class AlternateContact {
 }
 
 @Schema({ timestamps: true })
-export class Client extends Document {
+export class Client {
 
   @Prop({required: true, unique: true})
-  declare _id: string; // Custom clientId as primary key
+  _id: string; // Custom clientId as primary key
 
   @Prop()
   clientName: string;

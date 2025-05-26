@@ -26,4 +26,22 @@ export class MailService {
       throw error;
     }
   }
+
+  async sendforgetPasswordEmail(data: { email: string; forgetPasswordLink: string }): Promise<void> {
+    try {
+      await this.mailerService.sendMail({
+        to: data.email,
+        subject: 'Forget password!',
+        template: 'forgetPassword',
+        context: {
+          email:data.email,
+          forgetPasswordLink: data.forgetPasswordLink,
+        },
+      });
+      console.log('Invitation email sent successfully.');
+    } catch (error) {
+      console.error('Error sending invitation email:', error);
+      throw error;
+    }
+  }
 }

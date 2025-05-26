@@ -1,4 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsArray, IsEmail, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 class AlternateContactDto {
   @ApiProperty({ example: 'John Doe', description: 'Name of the alternate contact' })
@@ -12,31 +14,48 @@ class AlternateContactDto {
 }
 
 export class UpdateClientDto {
-  @ApiProperty({ required: false })
-  clientName?: string;
+  @ApiPropertyOptional({ example: 'Acme Corp' })
+  @IsOptional()
+  @IsString()
+  readonly clientName?: string;
 
-  @ApiProperty({ required: false })
-  hqCountry?: string;
+  @ApiPropertyOptional({ example: 'USA' })
+  @IsOptional()
+  @IsString()
+  readonly hqCountry?: string;
 
-  @ApiProperty({ required: false })
-  clientCode?: string;
+  @ApiPropertyOptional({ example: 'AC123' })
+  @IsOptional()
+  @IsString()
+  readonly clientCode?: string;
 
-  @ApiProperty({ required: false })
-  clientContactNo?: string;
+  @ApiPropertyOptional({ example: '+1234567890' })
+  @IsOptional()
+  @IsString()
+  readonly clientContactNo?: string;
 
-  @ApiProperty({ required: false })
-  clientMail?: string;
+  @ApiPropertyOptional({ example: 'contact@acme.com' })
+  @IsOptional()
+  @IsEmail()
+  readonly clientMail?: string;
 
-  @ApiProperty({ required: false })
-  chatId?: string;
+  @ApiPropertyOptional({ example: 'chat12345' })
+  @IsOptional()
+  @IsString()
+  readonly chatId?: string;
 
-  @ApiProperty({ required: false })
-  alternateContacts?: AlternateContactDto[];
+  @ApiPropertyOptional({ type: [AlternateContactDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AlternateContactDto)
+  readonly alternateContacts?: AlternateContactDto[];
 
-  @ApiProperty({ 
-    example: '64a1a12bc32e4a3e8c0550b3', 
+  @ApiPropertyOptional({
+    example: '64a1a12bc32e4a3e8c0550b3',
     description: 'ID of the user who updated this client',
-    required: false
   })
+  @IsOptional()
+  @IsString()
   updatedBy?: string;
-} 
+}

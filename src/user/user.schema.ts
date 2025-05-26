@@ -45,6 +45,9 @@ export class User {
   isActive: boolean;
 
   @Prop()
+  forgetPasswordToken: string;
+
+  @Prop()
   createdBy: string;
 
   @Prop()

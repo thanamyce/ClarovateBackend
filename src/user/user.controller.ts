@@ -14,7 +14,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto, RedeemDto, StatusUpdateDto } from './user.dto';
+import { CreateUserDto, forgetPasswordDto, RedeemDto, resetPasswordDto, StatusUpdateDto } from './user.dto';
 import { UpdateUserDto, LoginDto } from './user.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ReqUser } from 'src/util/decorates';
@@ -139,6 +139,21 @@ export class UserController {
   async updateStatus(@Body() body:StatusUpdateDto,@Param('id') id:string){
     return this.userService.changeActiveStatus(body.status,id);
 
+  }
+
+  @Post('forgetpassword')
+  @ApiOperation({ summary: 'send forget password email' })
+  @ApiResponse({ status: 200, description: 'forget password successfully sent' })
+  async forgetPassword(@Body() body:forgetPasswordDto){
+    return this.userService.forgetPassword(body.email);
+
+  }
+
+  @Patch('resetpassword')
+  @ApiOperation({ summary: 'reset current password' })
+  @ApiResponse({ status: 200, description: 'password successfully reset' })
+  async resetPassword(@Body() body:resetPasswordDto){
+    return this.userService.resetPassword(body.email,body.token,body.password);
   }
 
 

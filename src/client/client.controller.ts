@@ -9,6 +9,7 @@ import {
   UseGuards,
   UsePipes,
   ValidationPipe,
+  Put,
 } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -63,7 +64,7 @@ export class ClientController {
     return this.clientService.findOne(id);
   }
 
-  @Patch('client/:id')
+  @Put('client/:id')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Update client by ID' })
   @ApiParam({ name: 'id', description: 'Client ID' })
@@ -79,6 +80,7 @@ export class ClientController {
     if (reqUser && reqUser.id) {
       updateClientDto.updatedBy = reqUser.id;
     }
+    console.log(updateClientDto)
     const updatedClient = await this.clientService.update(id, updateClientDto);
     return {
       message: 'Client successfully updated',

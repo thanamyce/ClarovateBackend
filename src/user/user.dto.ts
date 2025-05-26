@@ -61,6 +61,28 @@ export class StatusUpdateDto{
   readonly status: boolean;
 }
 
+export class forgetPasswordDto{
+  @ApiProperty({ example: 'user@clarovate.io' })
+  @IsEmail()
+  readonly email:string;
+}
+
+export class resetPasswordDto{
+  @ApiProperty({ example: 'user@clarovate.io' })
+  @IsEmail()
+  readonly email:string;
+
+  @ApiProperty({ example: 'shfjasdfsjkfhadsfksnv' })
+  @IsString()
+  readonly token: string;
+
+  @ApiProperty({ example: 'newPassword' })
+  @IsString()
+  readonly password:string;
+
+}
+
+
 // For invitation redemption
 export class RedeemDto {
 

@@ -17,6 +17,8 @@ import { AuthService } from 'src/auth/auth.service';
 import { retry } from 'rxjs';
 import { CounterSchema } from './counter.schema';
 import { ResponseHelper } from 'src/util/response';
+import { v4 as uuidv4 } from 'uuid';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UserService {
@@ -25,7 +27,8 @@ export class UserService {
     @InjectModel(Invitation.name) private readonly InvitationModel: Model<InvitationDocument>,
     @InjectModel('CounterSchema') private readonly counterModel: Model<any>,
     private configService: ConfigService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly mailService:MailService,
   ) {}
 
   async createUser(user: CreateUserDto) {
@@ -99,6 +102,54 @@ export class UserService {
     delete userObj.password;
     return userObj;
   }
+
+  async forgetPassword(email: string){
+    try {
+      const user = await this.userModel.findOne({email:email});
+      if(!user){
+        throw new NotFoundException('User not found');
+      }
+      if(!user.isActive){
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      const token = uuidv4();
+      const forgetPasswordLink = `http://portal.clarovate.io/forget/${token}`;
+      await this.mailService.sendforgetPasswordEmail({ email, forgetPasswordLink });
+      const updateUser = await this.userModel.findOneAndUpdate({email: email},{$set: {forgetPasswordToken:token}},{new:true});
+      return {
+        success: true,
+        message: 'forget password email sent successfully',
+      };
+
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to send email")
+    }
+  }
+
+  async resetPassword(email: string, token: string, password: string){
+    try {
+      const user = await this.userModel.findOne({email: email});
+      if(!user){
+        throw new NotFoundException('User not found');
+      }
+      if(!user.forgetPasswordToken){
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      const salt = await bcrypt.genSalt(10);
+      const hashPassword = await bcrypt.hash(password,salt);
+      const updatedUser = await this.userModel.findOneAndUpdate({email: email},
+        {password: hashPassword},
+      {new: true});
+      if(updatedUser){
+        return ResponseHelper.success(updatedUser,"Password successfully updated",HttpStatus.OK);
+      }
+      
+    } catch (error) {
+     return ResponseHelper.error(error,"Failed to reset password",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
 
   async deleteUser(id: string): Promise<{ message: string }> {
     const user = await this.userModel.findById(id);
