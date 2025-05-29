@@ -20,10 +20,6 @@ import { MailModule } from 'src/mail/mail.module';
   providers: [UserService],
   exports: [UserService, MongooseModule,UserModule] // Export UserService and MongooseModule for circular dependency
 })
-export class UserModule implements OnModuleInit {
-  constructor(private userService: UserService) {}
-
-  async onModuleInit() {
-    await this.userService.createAdmin();
-  }
+export class UserModule{
+  
 }

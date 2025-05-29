@@ -8,6 +8,7 @@ import { InvitationModule } from './invitation/invitation.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { ClientModule } from './client/client.module';
+import { OrganizationModule } from './organization/organization.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ClientModule } from './client/client.module';
     AuthModule,
     MailModule,
     ClientModule,
+    OrganizationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

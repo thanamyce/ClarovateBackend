@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 
 export enum UserRole {
+  SUPER_ADMIN='SUPER_ADMIN',
   ADMIN = 'ADMIN',
   CO_ADMIN = "CO_ADMIN",
   USER = 'USER',
@@ -36,7 +37,11 @@ export class User {
   @Prop({ enum: UserRole, default: UserRole.USER, index: true })
   role: UserRole;
 
-  // Store OTP expiration time
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: false })
+  organizationId: mongoose.Types.ObjectId;
+
+  @Prop()
+  organizationName: string;
 
   @Prop({ default: null, index: true })  // ✅ Add refresh token field
   refreshToken?: string; // Store hashed refresh token

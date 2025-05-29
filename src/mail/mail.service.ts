@@ -8,7 +8,7 @@ export class MailService {
 
 ) {}
 
-  async sendInvitationEmail(data: { email: string; role: string; inviteLink: string }): Promise<void> {
+  async sendInvitationEmail(data: { email: string; role: string; inviteLink: string , organizationName?: string}): Promise<void> {
     try {
       await this.mailerService.sendMail({
         to: data.email,
@@ -18,6 +18,7 @@ export class MailService {
           email:data.email,
           role: data.role,
           inviteLink: data.inviteLink,
+          OrganizationName: data.organizationName || 'Clarovate'
         },
       });
       console.log('Invitation email sent successfully.');

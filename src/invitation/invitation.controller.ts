@@ -27,7 +27,11 @@ export class InvitationController {
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async sendInvitation(@Body() newUser: InvitationDto, @ReqUser() reqUser: any) {
     const createdBy = reqUser.id;
-    const result = await this.invitationService.sendInvitation(newUser.email, newUser.role, createdBy);
+    let organizationId = '';
+    if(newUser.organizationId){
+      organizationId = newUser.organizationId
+    }
+    const result = await this.invitationService.sendInvitation(newUser.email, newUser.role,newUser.type, organizationId, createdBy);
     console.log("invitation sent")
     return ResponseHelper.success(result, result.message, HttpStatus.OK);
   }

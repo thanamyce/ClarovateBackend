@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { UserRole } from "src/user/user.schema";
 
 export type  InvitationDocument = Invitation & Document;
@@ -10,6 +10,15 @@ export class Invitation{
 
   @Prop({ enum: ['USER', 'CO_ADMIN', 'ADMIN', 'SUPERVISOR', 'DESIGNER'] })
   role:UserRole; 
+
+    @Prop({ enum: ['INTERNAL', 'CLIENT'], default: 'CLIENT' })
+  type: string;
+ 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: false })
+  organizationId: mongoose.Types.ObjectId;
+ 
+  @Prop({ required: false })
+  organizationName: string;
 
   @Prop({ required: true })
   token: string;

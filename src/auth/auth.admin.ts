@@ -38,7 +38,7 @@ export class AuthAdmin implements CanActivate {
       if(!isValid){
         throw new UnauthorizedException(); 
       }
-      if(payload.role!='ADMIN'){
+      if(payload.role!='ADMIN' && payload.role!='SUPER_ADMIN'){
         throw new UnauthorizedException();
       }
       request['reqUser'] = payload;

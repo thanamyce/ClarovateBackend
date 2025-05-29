@@ -159,40 +159,47 @@ export class UserService {
     return { message: 'User deleted successfully' };
   }
 
-  async createAdmin() {
-    const existingAdmin = await this.userModel.findOne({ role: 'ADMIN' });
-
-    if (existingAdmin) {
-      console.log('Admin already exists');
-      return;
-    }
-
-    const email = this.configService.get<string>('ADMIN_EMAIL');
-    const password = this.configService.get<string>('ADMIN_PASSWORD');
-    const firstName = this.configService.get<string>('ADMIN_NAME');
-    const lastName = this.configService.get<string>('ADMIN_LASTNAME');
-
-    if (!password) {
-      console.log('No admin password configured');
-      return;
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt);
-    const newAdmin = new this.userModel({
-      _id: 'USER01',
-      email,
-      password: hashPassword,
-      firstName,
-      lastName,
-      role: 'ADMIN',
-      isAdmin: true,
-    });
-
-    const user = await newAdmin.save();
-    if (user) {
-      console.log('Admin successfully created');
-    }
+  async createAdmin(organizationId:string) {
+try {
+      const existingAdmin = await this.userModel.findOne({ role: 'SUPER_ADMIN' });
+  
+      if (existingAdmin) {
+        console.log('Admin already exists');
+        return;
+      }
+  
+      const email = this.configService.get<string>('ADMIN_EMAIL');
+      const password = this.configService.get<string>('ADMIN_PASSWORD');
+      const firstName = this.configService.get<string>('ADMIN_NAME');
+      const lastName = this.configService.get<string>('ADMIN_LASTNAME');
+  
+      if (!password) {
+        console.log('No admin password configured');
+        return;
+      }
+  
+      const salt = await bcrypt.genSalt(10);
+      const hashPassword = await bcrypt.hash(password, salt);
+      const newAdmin = new this.userModel({
+        _id: 'USER01',
+        email,
+        password: hashPassword,
+        firstName,
+        lastName,
+        role: 'SUPER_ADMIN',
+        isAdmin: true,
+        organizationId: organizationId
+      });
+  
+      const user = await newAdmin.save();
+       if (user) {
+        console.log('Admin successfully created');
+      }
+      return user;
+     
+} catch (error) {
+  console.log(error)
+}
   }
 
   async checkToken(id: string, token: string): Promise<boolean> {
@@ -216,18 +223,18 @@ export class UserService {
       return roles
   }
   async allUsers() {
-    const users = await this.userModel.find({});
+    const users = await this.userModel.find({role: {$ne: "SUPER_ADMIN"}});
     return users.length > 0 ? users : [];
   }
 
 async changeActiveStatus(status:boolean,id: string){
 
     try {
-      const user = await this.userModel.findById({id});
+      const user = await this.userModel.findById(id);
       if(!user){
         return ResponseHelper.success(null,"User not found",HttpStatus.NOT_FOUND)
       }else{
-        const updatedUser = await this.userModel.findByIdAndUpdate({id},{
+        const updatedUser = await this.userModel.findOneAndUpdate({_id:id},{
           $set:{isActive:status},
         },{
           new: true
@@ -241,29 +248,61 @@ async changeActiveStatus(status:boolean,id: string){
     }
   
 }
-
-  async invitaionRedeem(user: RedeemDto) {
-    const invitation = await this.InvitationModel.findOne({ token: user.token });
-    if (!invitation) throw new BadRequestException('Invalid invitation token');
-
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(user.password, salt);
-    const seq = await this.getNextSequence('user');
-    const newUser = new this.userModel({
-      _id: `USER${seq.toString().padStart(2, '0')}`,
-      email: invitation.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: invitation.role,
-      password: hashPassword,
-    });
-
-    await this.InvitationModel.deleteOne({ email: invitation.email });
-    const createdUser = await newUser.save();
-
-    const userObj:any = createdUser.toObject();
-    delete userObj.password;
-
-    return userObj;
+async invitaionRedeem(user: RedeemDto) {
+    try {
+      const invitation = await this.InvitationModel.findOne({ token: user.token });
+      if (!invitation) throw new BadRequestException('Invalid invitation token');
+ 
+      // Check if user with this email already exists
+      const existingUser = await this.userModel.findOne({ email: invitation.email });
+      if (existingUser) {
+        throw new BadRequestException('User with this email already exists');
+      }
+ 
+      const salt = await bcrypt.genSalt(10);
+      const hashPassword = await bcrypt.hash(user.password, salt);
+     
+      // Generate a unique sequence number
+      let seq;
+      let userId;
+      let isUniqueId = false;
+     
+      // Keep trying until we get a unique ID
+      while (!isUniqueId) {
+        seq = await this.getNextSequence('user');
+        userId = `USER${seq.toString().padStart(2, '0')}`;
+       
+        // Check if this ID already exists
+        const existingId = await this.userModel.findOne({ _id: userId });
+        if (!existingId) {
+          isUniqueId = true;
+        }
+      }
+     
+      const newUser = new this.userModel({
+        _id: userId,
+        email: invitation.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: invitation.role,
+        organizationId: invitation.organizationId,
+        password: hashPassword,
+      });
+ 
+      await this.InvitationModel.deleteOne({ email: invitation.email });
+      const createdUser = await newUser.save();
+ 
+      const userObj:any = createdUser.toObject();
+      delete userObj.password;
+ 
+      return userObj;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error('Error redeeming invitation:', error);
+      throw new InternalServerErrorException('Failed to create user from invitation');
+    }
   }
+
 }

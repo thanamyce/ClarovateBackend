@@ -5,11 +5,12 @@ import { Invitation, InvitaionSchema } from './invitation.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from 'src/user/user.module';
 import { MailModule } from 'src/mail/mail.module';
+import { Organization, OrganizationSchema } from 'src/organization/organization.schema';
 
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Invitation.name, schema: InvitaionSchema }]),
+    MongooseModule.forFeature([{ name: Invitation.name, schema: InvitaionSchema },{name: Organization.name, schema: OrganizationSchema}]),
     MailModule, 
     forwardRef(() => UserModule)
   ],

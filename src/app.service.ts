@@ -1,12 +1,20 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { Connection, Model } from 'mongoose';
+import { OrganizationService } from './organization/organization.service';
+import { UserService } from './user/user.service';
+import { User, UserDocument } from './user/user.schema';
 
 @Injectable()
 export class AppService implements OnModuleInit{
-  constructor(@InjectConnection() private readonly connection:Connection){}
+  constructor(@InjectConnection() private readonly connection:Connection,
+  private readonly organizationService: OrganizationService,
+  private readonly userService: UserService,
+  @InjectModel(User.name) private userModel: Model<UserDocument>
+
+){}
   getHello(){}
-  onModuleInit() {
+  async onModuleInit() {
     this.connection.on('done', () => {
       console.log('✅ MongoDB is connected successfully');
     });
@@ -18,5 +26,16 @@ export class AppService implements OnModuleInit{
     this.connection.on('disconnected', () => {
       console.warn('⚠️ MongoDB disconnected');
     });
+
+   try {
+   
+     const organization:any = await this.organizationService.createInternalOrganization();
+      const user:any = await this.userService.createAdmin(organization._id);
+   } catch (error) {
+    console.log(error)
+    
+   }
+
+
   }
 }
